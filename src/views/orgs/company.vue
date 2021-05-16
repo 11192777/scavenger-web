@@ -106,12 +106,8 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
-  // { key: 'US', display_name: 'USA' },
-  // { key: 'JP', display_name: 'Japan' },
-  // { key: 'EU', display_name: 'Eurozone' }
 ]
 
-// arr to obj ,such as { CN : "China", US : "USA" }
 const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
@@ -194,7 +190,7 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
-        }, 1.5 * 1000)
+        })
       })
     },
     handleFilter() {
@@ -307,20 +303,6 @@ export default {
         this.dialogPvVisible = true
       })
     },
-    // handleDownload() {
-    //   this.downloadLoading = true
-    //   import('@/vendor/Export2Excel').then(excel => {
-    //     const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const data = this.formatJson(filterVal, this.list)
-    //     excel.export_json_to_excel({
-    //       header: tHeader,
-    //       data,
-    //       filename: 'table-list'
-    //     })
-    //     this.downloadLoading = false
-    //   })
-    // },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
         if (j === 'timestamp') {

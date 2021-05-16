@@ -1,6 +1,8 @@
 <template>
   <div class="app-container">
+
     <div class="filter-container">
+
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
       <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
@@ -24,58 +26,41 @@
           {{ (listQuery.page - 1) * listQuery.size + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column :label="'名称'" prop="id" sortable="custom" align="center">
+      <el-table-column :label="'分类名称'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
+          <span>{{ scope.row.value }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'创建人'" align="center">
+      <el-table-column :label="'分类编码'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.createdByName }}</span>
+          <span>{{ scope.row.key }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'所属部门'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.departmentName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'岗位描述'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.remark }}</span>
-        </template>
-      </el-table-column>
+
       <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">启用
-          </el-button>
           <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
 
-    <!--  新增编辑界面  -->
+<!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="'所属部门'">
-          <el-select v-model="positionEntity.departmentId" style="width: 140px" class="filter-item">
-            <el-option v-for="item in departmentList" :key="item.id" :label="item.name" :value="item.id"/>
-          </el-select>
+      <el-form ref="dataForm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item :label="'分类名称'">
+          <el-input v-model="goodsClassEntity.name"/>
         </el-form-item>
-        <el-form-item :label="'岗位名称'" prop="timestamp">
-          <el-input v-model="positionEntity.name"/>
+        <el-form-item :label="'分类编码'">
+          <el-input v-model="goodsClassEntity.code"/>
         </el-form-item>
-        <el-form-item :label="'岗位描述'" prop="timestamp">
-          <el-input type="textarea" :rows="10" placeholder="请输入岗位描述" v-model="positionEntity.describe"/>
-        </el-form-item>
-
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">确定</el-button>
+        <el-button type="primary" v-if="dialogStatus == 'create'" @click="createData()">确定</el-button>
+        <el-button type="primary" v-if="dialogStatus == 'update'" @click="updateData()">确定</el-button>
       </div>
     </el-dialog>
 
@@ -93,10 +78,11 @@
 </template>
 
 <script>
-import DepartmentApi from '@/api/department'
-import PositionApi from '@/api/position'
+import MarketApi from '@/api/market'
 import waves from '@/directive/waves' // Waves directive
-import Pagination from '@/components/Pagination'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import Util from '@/utils/validate'
+import GoodsClassApi from '@/api/goodsClass'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
@@ -108,6 +94,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
+
   name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
@@ -126,17 +113,19 @@ export default {
   },
   data() {
     return {
+      imagecropperShow: false,
+      imagecropperKey: 0,
+      image: 'https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191',
       tableKey: 0,
       list: null,
-      departmentList: null,
+      marketList: null,
       positionList: null,
       total: 0,
       listLoading: true,
-      positionEntity: {
+      goodsClassEntity:{
         id: null,
-        departmentId: null,
         name: null,
-        describe: null
+        code: null
       },
       listQuery: {
         page: 1,
@@ -168,24 +157,33 @@ export default {
     }
   },
   created() {
-    this.getDepartmentList(this.listQuery)
-    this.getPositionList(this.listQuery)
     this.getList()
   },
   methods: {
-    getPositionList() {
-      PositionApi.getPositionList(this.listQuery, this.positionEntity.departmentId).then(res => {
-        this.positionList = res.data
-      })
+    cropSuccess(resData) {
+      this.imagecropperShow = false
+      this.imagecropperKey = this.imagecropperKey + 1
+      this.image = resData.files.avatar
     },
-    getDepartmentList() {
-      DepartmentApi.getDepartmentList(this.listQuery).then(res => {
-        this.departmentList = res.data
+    close() {
+      this.imagecropperShow = false
+    },
+    dropzoneS(file) {
+      console.log(file)
+      this.$message({ message: 'Upload success', type: 'success' })
+    },
+    dropzoneR(file) {
+      console.log(file)
+      this.$message({ message: 'Delete success', type: 'success' })
+    },
+    getMarketList(){
+      MarketApi.getMarketList(this.listQuery).then(res =>{
+        this.marketList = res.data
       })
     },
     getList() {
       this.listLoading = true
-      PositionApi.getPositionList(this.listQuery).then(response => {
+      GoodsClassApi.getGoodsClassList(this.listQuery).then(response => {
         this.list = response.data
         this.total = response.total
 
@@ -200,11 +198,14 @@ export default {
       this.getList()
     },
     handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作成功',
-        type: 'success'
+      this.goodsClassEntity.repositoryId = row.id
+      this.temp = Object.assign({}, row) // copy obj
+      this.temp.createData = new Date(this.temp.timestamp)
+      this.dialogStatus = 'status'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
       })
-      row.status = status
     },
     sortChange(data) {
       const { prop, order } = data
@@ -240,29 +241,43 @@ export default {
       })
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          PositionApi.createPosition(this.positionEntity).then(() => {
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-            this.getList()
-          })
-        }
+
+      GoodsClassApi.createGoodsClass(this.goodsClassEntity).then(() =>{
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '创建成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.getList()
+      })
+    },
+    releaseData(){
+
+      if (!Util.validateDouble(this.goodsClassEntity.price)){
+        this.$notify({
+          title: '错误',
+          message: '请输入正确的价格',
+          type: 'error',
+          duration: 2000
+        })
+        return
+      }
+
+      GoodsClassApi.createGoodsClass(this.goodsClassEntity).then(() =>{
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '发布成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.getList()
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+      this.$router.push({ path: "/shopping/attachment/" + row.id });
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {

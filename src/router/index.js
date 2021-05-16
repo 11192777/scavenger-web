@@ -94,6 +94,12 @@ export const constantRouterMap = [
         meta: { title: '超市管理', icon: 'table' }
       },
       {
+        path: 'class',
+        name: 'class',
+        component: () => import('@/views/shopping/goodsClass'),
+        meta: { title: '商品分类', icon: 'table' }
+      },
+      {
         path: 'repository',
         name: 'repository',
         component: () => import('@/views/shopping/repository'),
@@ -119,121 +125,64 @@ export const constantRouterMap = [
     component: Layout,
     redirect: '/courier/staff',
     name: 'courier',
-    meta: { title: 'courier', icon: 'example' },
+    meta: { title: '配送服务', icon: 'example' },
     children: [
       {
         path: 'courier',
         name: 'courier',
         component: () => import('@/views/courier/staff'),
+        meta: { title: '配送人员', icon: 'table' }
+      },
+      {
+        path: 'courier',
+        name: 'courier',
+        component: () => import('@/views/courier/staff'),
+        meta: { title: '订单查看', icon: 'table' }
+      },
+      {
+        path: 'courier',
+        name: 'courier',
+        component: () => import('@/views/courier/staff'),
+        meta: { title: '用户收藏', icon: 'table' }
+      }
+    ]
+  },
+  {
+    path: '/recommend',
+    component: Layout,
+    redirect: '/recommend/user',
+    name: 'recommend',
+    meta: { title: '推荐服务', icon: 'example' },
+    children: [
+      {
+        path: 'courier',
+        name: 'courier',
+        component: () => import('@/views/recommend/user'),
         meta: { title: '配送服务', icon: 'table' }
-      }
-    ]
-  },
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'example' },
-    children: [
-      {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
       },
       {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        path: 'courier',
+        name: 'courier',
+        component: () => import('@/views/recommend/goods'),
+        meta: { title: '订单查看', icon: 'table' }
       }
     ]
   },
-
   {
-    path: '/form',
+    path: '/audit',
     component: Layout,
+    redirect: '/audit/log',
+    name: 'audit',
+    meta: { title: '操作审计', icon: 'example' },
     children: [
       {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
+        path: 'courier',
+        name: 'courier',
+        component: () => import('@/views/audit/log'),
+        meta: { title: '操作日志', icon: 'table' }
       }
     ]
-  },
-
-  {
-    path: '/nested',
-    component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: 'Nested',
-      icon: 'nested'
-    },
-    children: [
-      {
-        path: 'menu1',
-        component: () => import('@/views/nested/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: 'Menu1' },
-        children: [
-          {
-            path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu1-1'),
-            name: 'Menu1-1',
-            meta: { title: 'Menu1-1' }
-          },
-          {
-            path: 'menu1-2',
-            component: () => import('@/views/nested/menu1/menu1-2'),
-            name: 'Menu1-2',
-            meta: { title: 'Menu1-2' },
-            children: [
-              {
-                path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
-                name: 'Menu1-2-1',
-                meta: { title: 'Menu1-2-1' }
-              },
-              {
-                path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
-                name: 'Menu1-2-2',
-                meta: { title: 'Menu1-2-2' }
-              }
-            ]
-          },
-          {
-            path: 'menu1-3',
-            component: () => import('@/views/nested/menu1/menu1-3'),
-            name: 'Menu1-3',
-            meta: { title: 'Menu1-3' }
-          }
-        ]
-      },
-      {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        meta: { title: 'menu2' }
-      }
-    ]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
-      }
-    ]
-  },
-
-  { path: '*', redirect: '/404', hidden: true }
+  }
 ]
 
 export default new Router({
