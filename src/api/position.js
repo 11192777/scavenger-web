@@ -10,7 +10,7 @@ export default {
       method: 'get',
       params: {
         page: listQuery.page,
-        size: listQuery.size,
+        limit: listQuery.limit,
         departmentId: departmentId
       }
     })

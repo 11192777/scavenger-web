@@ -21,7 +21,7 @@
       @sort-change="sortChange">
       <el-table-column label="序号" width="70" align="center">
         <template slot-scope="scope">
-          {{ (listQuery.page - 1) * listQuery.size + scope.$index + 1 }}
+          {{ (listQuery.page - 1) * listQuery.limit + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column :label="'编码'" prop="id" sortable="custom" align="center">
@@ -77,39 +77,39 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="'租户名称'" prop="type">
-          <el-input v-model="companyEntity.name"/>
+          <el-input v-model="tenantEntity.name"/>
 <!--          <el-select v-model="this.tenantEntity.name" class="filter-item" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
           </el-select>-->
         </el-form-item>
         <el-form-item :label="'所属人账号'" prop="timestamp">
-          <el-input v-model="companyEntity.account"/>
+          <el-input v-model="tenantEntity.account"/>
         </el-form-item>
         <el-form-item :label="'租户期限'" prop="title">
 <!--    readonly="true"      -->
-          <el-date-picker v-model="companyEntity.expireTime" type="datetime" placeholder="Please pick a date"/>
+          <el-date-picker v-model="tenantEntity.expireTime" type="datetime" placeholder="Please pick a date"/>
 <!--          <el-input v-if="this.dialogStatus=='update'" v-model="this.tenantEntity.expireTime"/>
           <el-input v-if="this.dialogStatus=='create'" v-model="this.tenantEntity.expireTime"/>-->
         </el-form-item>
         <el-form-item :label="'组织架构'">
-          <el-radio v-model="companyEntity.orgServer" label="true">启用</el-radio>
-          <el-radio v-model="companyEntity.orgServer" label="false">禁用</el-radio>
+          <el-radio v-model="tenantEntity.orgServer" label="true">启用</el-radio>
+          <el-radio v-model="tenantEntity.orgServer" label="false">禁用</el-radio>
         </el-form-item>
         <el-form-item :label="'购物服务'">
-          <el-radio v-model="companyEntity.shoppingServer" label="true">启用</el-radio>
-          <el-radio v-model="companyEntity.shoppingServer" label="false">禁用</el-radio>
+          <el-radio v-model="tenantEntity.shoppingServer" label="true">启用</el-radio>
+          <el-radio v-model="tenantEntity.shoppingServer" label="false">禁用</el-radio>
         </el-form-item>
         <el-form-item :label="'配送服务'">
-          <el-radio v-model="companyEntity.courierServer" label="true">启用</el-radio>
-          <el-radio v-model="companyEntity.courierServer" label="false">禁用</el-radio>
+          <el-radio v-model="tenantEntity.courierServer" label="true">启用</el-radio>
+          <el-radio v-model="tenantEntity.courierServer" label="false">禁用</el-radio>
         </el-form-item>
         <el-form-item :label="'推荐服务'">
-          <el-radio v-model="companyEntity.recommendServer" label="true">启用</el-radio>
-          <el-radio v-model="companyEntity.recommendServer" label="false">禁用</el-radio>
+          <el-radio v-model="tenantEntity.recommendServer" label="true">启用</el-radio>
+          <el-radio v-model="tenantEntity.recommendServer" label="false">禁用</el-radio>
         </el-form-item>
         <el-form-item :label="'审计服务'">
-          <el-radio v-model="companyEntity.auditServer" label="true">启用</el-radio>
-          <el-radio v-model="companyEntity.auditServer" label="false">禁用</el-radio>
+          <el-radio v-model="tenantEntity.auditServer" label="true">启用</el-radio>
+          <el-radio v-model="tenantEntity.auditServer" label="false">禁用</el-radio>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -173,7 +173,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
-      companyEntity:{
+      tenantEntity:{
         name: null,
         account: null,
         expireTime: new Date(),
@@ -185,7 +185,7 @@ export default {
       },
       listQuery: {
         page: 1,
-        size: 20,
+        limit: 20,
         importance: undefined,
         title: undefined,
         type: undefined
@@ -275,8 +275,8 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          TenantApi.createCompany(this.companyEntity).then(() => {
-            this.list.unshift(this.companyEntity)
+          TenantApi.createTenant(this.tenantEntity).then(() => {
+            this.getList(this.listQuery)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',

@@ -21,7 +21,7 @@
       @sort-change="sortChange">
       <el-table-column label="序号" width="70" align="center">
         <template slot-scope="scope">
-          {{ (listQuery.page - 1) * listQuery.size + scope.$index + 1 }}
+          {{ (listQuery.page - 1) * listQuery.limit + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column :label="'名称'" prop="id" sortable="custom" align="center">
@@ -144,7 +144,7 @@ export default {
       },
       listQuery: {
         page: 1,
-        size: 20,
+        limit: 20,
         importance: undefined,
         title: undefined,
         type: undefined

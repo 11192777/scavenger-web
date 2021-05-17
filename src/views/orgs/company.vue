@@ -21,7 +21,7 @@
       @sort-change="sortChange">
       <el-table-column label="序号" width="70" align="center">
         <template slot-scope="scope">
-          {{ (listQuery.page - 1) * listQuery.size + scope.$index + 1 }}
+          {{ (listQuery.page - 1) * listQuery.limit + scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column :label="'编码'" prop="id" sortable="custom" align="center">
@@ -65,7 +65,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
@@ -144,7 +144,7 @@ export default {
       },
       listQuery: {
         page: 1,
-        size: 20,
+        limit: 20,
         importance: undefined,
         title: undefined,
         type: undefined

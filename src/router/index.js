@@ -51,8 +51,7 @@ export const constantRouterMap = [
         path: 'tenant',
         name: 'tenant',
         component: () => import('@/views/orgs/tenant'),
-        meta: { title: '租户管理', icon: 'table', noCache: CONST.orgServer},
-        hidden: CONST.orgServer
+        meta: { title: '租户管理', icon: 'table'}
       },
       {
         path: 'company',
@@ -179,7 +178,7 @@ export const constantRouterMap = [
         path: 'courier',
         name: 'courier',
         component: () => import('@/views/audit/log'),
-        meta: { title: '操作日志', icon: 'table' }
+        meta: { title: '操作审计', icon: 'table' }
       }
     ]
   }
