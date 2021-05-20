@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 230px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
@@ -34,44 +34,81 @@
           <span>{{ scope.row.createdByName }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'所属部门'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.departmentName }}</span>
-        </template>
-      </el-table-column>
       <el-table-column :label="'岗位描述'" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.remark }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="'操作'" align="center" width="120" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">启用
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
-          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
     <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="'所属部门'">
-          <el-select v-model="positionEntity.departmentId" style="width: 140px" class="filter-item">
-            <el-option v-for="item in departmentList" :key="item.id" :label="item.name" :value="item.id"/>
-          </el-select>
-        </el-form-item>
+      <el-form ref="dataForm" :model="this.positionEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="'岗位名称'" prop="timestamp">
           <el-input v-model="positionEntity.name"/>
         </el-form-item>
         <el-form-item :label="'岗位描述'" prop="timestamp">
           <el-input type="textarea" :rows="10" placeholder="请输入岗位描述" v-model="positionEntity.describe"/>
         </el-form-item>
-
+        <el-form-item :label="'公司管理'">
+          <el-radio v-model="positionEntity.company" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.company" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'部门管理'">
+          <el-radio v-model="positionEntity.department" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.department" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'岗位管理'">
+          <el-radio v-model="positionEntity.position" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.position" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'员工管理'">
+          <el-radio v-model="positionEntity.staff" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.staff" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'超市管理'">
+          <el-radio v-model="positionEntity.market" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.market" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'商品管理'">
+          <el-radio v-model="positionEntity.repository" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.repository" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'货架管理'">
+          <el-radio v-model="positionEntity.show" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.show" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'配送人员'">
+          <el-radio v-model="positionEntity.courier" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.courier" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'订单管理'">
+          <el-radio v-model="positionEntity.order" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.order" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'用户收藏'">
+          <el-radio v-model="positionEntity.collect" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.collect" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'用户推荐'">
+          <el-radio v-model="positionEntity.userRem" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.userRem" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'商品推荐'">
+          <el-radio v-model="positionEntity.goodsRem" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.goodsRem" label="0">禁用</el-radio>
+        </el-form-item>
+        <el-form-item :label="'操作审计'">
+          <el-radio v-model="positionEntity.audit" label="1">启用</el-radio>
+          <el-radio v-model="positionEntity.audit" label="0">禁用</el-radio>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
@@ -134,9 +171,21 @@ export default {
       listLoading: true,
       positionEntity: {
         id: null,
-        departmentId: null,
         name: null,
-        describe: null
+        describe: null,
+        company: "1",
+        department: "1",
+        position: "1",
+        staff: "1",
+        market: "1",
+        repository: "1",
+        show: "1",
+        courier: "1",
+        order: "1",
+        collect: "1",
+        userRem: "1",
+        goodsRem: "1",
+        audit: "1"
       },
       listQuery: {
         page: 1,
@@ -185,13 +234,14 @@ export default {
     },
     getList() {
       this.listLoading = true
-      PositionApi.getPositionList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+      setTimeout(() => {
+        PositionApi.getPositionList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -221,14 +271,24 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.positionEntity = {
+        id: null,
+        departmentId: null,
+        name: null,
+        describe: null,
+        company: "1",
+        department: "1",
+        position: "1",
+        staff: "1",
+        market: "1",
+        repository: "1",
+        show: "1",
+        courier: "1",
+        order: "1",
+        collect: "1",
+        userRem: "1",
+        goodsRem: "1",
+        audit: "1"
       }
     },
     handleCreate() {
@@ -256,8 +316,8 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
+      this.positionEntity = Object.assign({}, row)
+      this.positionEntity.describe = row.remark
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -266,18 +326,8 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          PositionApi.updateData(this.positionEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -285,6 +335,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })

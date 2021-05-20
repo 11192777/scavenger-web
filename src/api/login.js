@@ -6,7 +6,8 @@ export function login(username, password) {
     method: 'get',
     params:{
       account: username,
-      password: password
+      password: password,
+      manager: true
     }
   })
 }

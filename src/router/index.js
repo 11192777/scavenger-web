@@ -9,7 +9,7 @@ Vue.use(Router)
 /* Layout */
 
 import Layout from '../views/layout/Layout'
-import CONST from '../../config/const'
+import fa from 'element-ui/src/locale/lang/fa'
 
 /**
 * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
@@ -39,7 +39,6 @@ export const constantRouterMap = [
       component: () => import('@/views/dashboard/index')
     }]
   },
-
   {
     path: '/orgs',
     component: Layout,
@@ -93,8 +92,8 @@ export const constantRouterMap = [
         meta: { title: '超市管理', icon: 'table' }
       },
       {
-        path: 'class',
-        name: 'class',
+        path: 'goodsClass',
+        name: 'goodsClass',
         component: () => import('@/views/shopping/goodsClass'),
         meta: { title: '商品分类', icon: 'table' }
       },
@@ -133,16 +132,17 @@ export const constantRouterMap = [
         meta: { title: '配送人员', icon: 'table' }
       },
       {
-        path: 'courier',
-        name: 'courier',
-        component: () => import('@/views/courier/staff'),
+        path: 'order',
+        name: 'order',
+        component: () => import('@/views/courier/order'),
         meta: { title: '订单查看', icon: 'table' }
       },
       {
-        path: 'courier',
-        name: 'courier',
-        component: () => import('@/views/courier/staff'),
-        meta: { title: '用户收藏', icon: 'table' }
+        path: 'collect',
+        name: 'collect',
+        component: () => import('@/views/courier/collect'),
+        meta: { title: '用户收藏', icon: 'table' },
+        noCache: true
       }
     ]
   },
@@ -154,16 +154,16 @@ export const constantRouterMap = [
     meta: { title: '推荐服务', icon: 'example' },
     children: [
       {
-        path: 'courier',
-        name: 'courier',
+        path: 'userRem',
+        name: 'userRem',
         component: () => import('@/views/recommend/user'),
-        meta: { title: '配送服务', icon: 'table' }
+        meta: { title: '用户推荐', icon: 'table' }
       },
       {
-        path: 'courier',
-        name: 'courier',
+        path: 'goodsRem',
+        name: 'goodsRem',
         component: () => import('@/views/recommend/goods'),
-        meta: { title: '订单查看', icon: 'table' }
+        meta: { title: '商品推荐', icon: 'table' }
       }
     ]
   },

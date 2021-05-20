@@ -1,10 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
-      </el-select>
+      <el-input :placeholder="'名称'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
       <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">添加</el-button>
     </div>
@@ -39,22 +36,20 @@
           <span>{{ scope.row.siteName }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="'操作'" align="center" width="180" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">启用
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
+          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">离职
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="temp" label-city="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :model="this.staffEntity" label-city="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="'所属省份'">
           <el-select v-model="staffEntity.provinceId" style="width: 280px" class="filter-item" @change="provinceListChange()">
             <el-option v-for="item in provinceList" :key="item.id" :label="item.name" :value="item.id"/>
@@ -65,8 +60,11 @@
             <el-option v-for="item in cityList" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
-        <el-form-item :label="'员工账号'" prop="timestamp">
+        <el-form-item v-if="dialogStatus!='update'" :label="'员工账号'" prop="timestamp">
           <el-input v-model="staffEntity.account"/>
+        </el-form-item>
+        <el-form-item v-if="dialogStatus=='update'" :label="'员工账号'" prop="timestamp">
+          <el-input disabled="disabled" v-model="staffEntity.account"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -182,13 +180,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      CourierApi.getCourierList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
+      setTimeout(() => {
+        CourierApi.getCourierList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -222,14 +222,11 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.staffEntity = {
+        id: null,
+        account: null,
+        provinceId: null,
+        cityId: null
       }
     },
     handleCreate() {
@@ -257,8 +254,9 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
+      this.resetTemp()
+      this.staffEntity.id = row.id
+      this.staffEntity.account = row.userAccount
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -267,18 +265,8 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          CourierApi.updateData(this.staffEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -286,6 +274,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
@@ -306,15 +295,6 @@ export default {
         this.dialogPvVisible = true
       })
     },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
-    }
   }
 }
 </script>

@@ -4,7 +4,7 @@
     <div class="filter-container">
 
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 230px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
@@ -57,49 +57,53 @@
         </template>
       </el-table-column>
 
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="'操作'" align="center" width="180" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'status')">上架
+          <el-button v-if="scope.row.status!='status'" size="mini" type="success" @click="handleModifyStatus(scope.row)">上架
           </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
+          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleUpdate(scope.row)">入库
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item v-if="dialogStatus!='status'" :label="'所属超市'">
+      <el-form ref="dataForm" :model="this.goodsRepositoryEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item v-if="dialogStatus!='status' && dialogStatus!='deleted'" :label="'所属超市'">
           <el-select v-model="goodsRepositoryEntity.marketId" style="width: 280px" class="filter-item">
             <el-option v-for="item in marketList" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
-        <el-form-item :label="'商品名称'">
+        <el-form-item v-if="dialogStatus!='deleted' && dialogStatus!='deleted'" :label="'商品名称'">
           <el-input v-model="goodsRepositoryEntity.name"/>
         </el-form-item>
         <el-form-item v-if="dialogStatus!='status'" :label="'入库数量'" >
           <el-input-number :min="1" v-model="goodsRepositoryEntity.amount"/>
         </el-form-item>
-        <el-form-item v-if="dialogStatus=='status'" :label="'上架数量'" >
+        <el-form-item v-if="dialogStatus=='status' && dialogStatus!='deleted'" :label="'上架数量'" >
           <el-input-number :min="1" v-model="goodsRepositoryEntity.amount"/>
         </el-form-item>
-        <el-form-item :label="'商品价格'">
+        <el-form-item v-if="dialogStatus!='deleted'" :label="'商品价格'">
           <el-input v-model="goodsRepositoryEntity.price" style="width: 60px;"/>
         </el-form-item>
-        <el-form-item :label="'商品位置'">
+        <el-form-item v-if="dialogStatus!='deleted'" :label="'商品位置'">
           <el-input type="textarea" :rows="2" v-model="goodsRepositoryEntity.location"/>
         </el-form-item>
-        <el-form-item :label="'备注'">
+        <el-form-item v-if="dialogStatus=='status'" :label="'所属分类'" >
+          <el-select v-model="goodsRepositoryEntity.goodsClassId" style="width: 280px" class="filter-item">
+            <el-option v-for="item in goodsClassList" :key="item.id" :label="item.value" :value="item.id"/>
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="dialogStatus!='deleted'" :label="'备注'">
           <el-input type="textarea" :rows="10" v-model="goodsRepositoryEntity.remark"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
         <el-button type="primary" v-if="dialogStatus == 'create'" @click="createData()">确定</el-button>
-        <el-button type="primary" v-if="dialogStatus == 'update'" @click="updateData()">确定</el-button>
+        <el-button type="primary" v-if="dialogStatus == 'deleted'" @click="updateData()">确定</el-button>
         <el-button type="primary" v-if="dialogStatus == 'status'" @click="releaseData()">确定</el-button>
       </div>
     </el-dialog>
@@ -118,14 +122,13 @@
 </template>
 
 <script>
-import ImageCropper from '@/components/ImageCropper'
-import PanThumb from '@/components/PanThumb'
 import MarketApi from '@/api/market'
 import GoodsRepositoryApi from '@/api/goodsRepository'
 import waves from '@/directive/waves' // Waves directive
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import Util from '@/utils/validate'
 import GoodsShowApi from '@/api/goodsShow'
+import GoodsClassApi from '@/api/goodsClass'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
@@ -156,24 +159,23 @@ export default {
   },
   data() {
     return {
-      imagecropperShow: false,
-      imagecropperKey: 0,
-      image: 'https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191',
       tableKey: 0,
       list: null,
       marketList: null,
       positionList: null,
+      goodsClassList: null,
       total: 0,
       listLoading: true,
       goodsRepositoryEntity:{
         id: null,
         name: null,
-        amount: null,
+        amount: 0,
         price: null,
         remark: null,
         location: null,
         marketId: null,
-        repositoryId: null
+        repositoryId: null,
+        goodsClassId: null
       },
       listQuery: {
         page: 1,
@@ -207,8 +209,14 @@ export default {
   created() {
     this.getList()
     this.getMarketList(this.listQuery)
+    this.getGoodsClassList()
   },
   methods: {
+    getGoodsClassList(){
+      GoodsClassApi.getGoodsClassList({page: 0, limit: 1000}).then( res => {
+        this.goodsClassList = res.data
+      })
+    },
     cropSuccess(resData) {
       this.imagecropperShow = false
       this.imagecropperKey = this.imagecropperKey + 1
@@ -232,13 +240,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      GoodsRepositoryApi.getGoodsRepositoryList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
+      setTimeout(() => {
+        GoodsRepositoryApi.getGoodsRepositoryList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -246,10 +256,8 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row, status) {
+    handleModifyStatus(row) {
       this.goodsRepositoryEntity.repositoryId = row.id
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
       this.dialogStatus = 'status'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -271,14 +279,16 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.goodsRepositoryEntity = {
+        id: null,
+        name: null,
+        amount: null,
+        price: null,
+        remark: null,
+        location: null,
+        marketId: null,
+        repositoryId: null,
+        goodsClassId: null
       }
     },
     handleCreate() {
@@ -313,7 +323,6 @@ export default {
       })
     },
     releaseData(){
-
       if (!Util.validateDouble(this.goodsRepositoryEntity.price)){
         this.$notify({
           title: '错误',
@@ -336,9 +345,8 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
+      this.goodsRepositoryEntity.id = row.id
+      this.dialogStatus = 'deleted'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -346,25 +354,16 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          GoodsRepositoryApi.updateData(this.goodsRepositoryEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
-              message: '更新成功',
+              message: '入库成功',
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })

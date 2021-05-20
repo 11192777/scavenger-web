@@ -26,13 +26,12 @@ export default {
       AttachmentApi.uploadFile(formData).then(response => {
 
         GoodsAttachmentApi.goodsAttachment(this.$route.params.id, response.data.id).then(res =>{
-
-        })
-        this.$notify({
-          title: '上传成功',
-          message: '创建成功',
-          type: 'success',
-          duration: 1000
+          this.$notify({
+            title: '上传成功',
+            message: '创建成功',
+            type: 'success',
+            duration: 1000
+          })
         })
       })
     },

@@ -1,6 +1,8 @@
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import ConstStore from '../../../config/ConstStore'
 
+import fa from 'element-ui/src/locale/lang/fa'
 const user = {
   state: {
     token: getToken(),
@@ -31,6 +33,7 @@ const user = {
       return new Promise((resolve, reject) => {
         login(username, userInfo.password).then(response => {
           const data = response.data
+          ConstStore.userLevel = data.userLevel
           setToken(data.token)
           commit('SET_TOKEN', data.token)
           resolve()

@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 230px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
@@ -39,7 +39,7 @@
           <span>{{ scope.row.tenantName }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'创建人账户'" align="center">
+      <el-table-column :label="'所属人账户'" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.createdByUserAccount }}</span>
         </template>
@@ -54,13 +54,9 @@
           <span>{{ scope.row.createdDate }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="'操作'" align="center" width="120" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">启用
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
-          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -69,9 +65,9 @@
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="'所属租户'">
-          <el-select v-model="companyEntity.tenantId" style="width: 140px" class="filter-item">
+      <el-form ref="dataForm" :model="this.companyEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item v-if="userLevel=='SYSTEM_ADMIN' && dialogStatus=='create'" :label="'所属租户'">
+          <el-select v-model="companyEntity.tenantId" style="width: 240px" class="filter-item">
             <el-option v-for="item in tenantList" :key="item.id" :label="item.name" :value="item.id"/>
           </el-select>
         </el-form-item>
@@ -103,7 +99,7 @@ import CompanyApi from '@/api/company'
 import TenantApi from '@/api/tenant'
 import waves from '@/directive/waves' // Waves directive
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-
+import ConstStore from '../../../config/ConstStore'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
 ]
@@ -135,6 +131,7 @@ export default {
       tableKey: 0,
       list: null,
       tenantList: null,
+      userLevel: ConstStore.userLevel,
       total: 0,
       listLoading: true,
       companyEntity:{
@@ -183,13 +180,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      CompanyApi.getCompanyList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
+      setTimeout(() => {
+        CompanyApi.getCompanyList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -219,14 +218,10 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.companyEntity = {
+        id: null,
+        name: null,
+        tenantId: null
       }
     },
     handleCreate() {
@@ -254,8 +249,8 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
+      this.companyEntity.name = row.name
+      this.companyEntity.id = row.id
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -264,18 +259,8 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          CompanyApi.updateData(this.companyEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -283,6 +268,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })

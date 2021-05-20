@@ -8,8 +8,8 @@ export default {
       url: '/api/v1/goods/repositorys',
       method: 'get',
       params: {
-        page: listQuery.page,
-        limit: listQuery.limit
+        page: listQuery == null ? null : listQuery.page,
+        limit: listQuery == null ? null : listQuery.limit
       }
     })
   },
@@ -19,6 +19,14 @@ export default {
       url: '/api/v1/goods/repository',
       method: 'post',
       data: goodsRepository
+    })
+  },
+
+  updateData(formData){
+    return request({
+      url: '/api/v1/goods/repository',
+      method: 'put',
+      data: formData
     })
   }
 }

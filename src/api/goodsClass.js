@@ -8,8 +8,8 @@ export default {
       url: '/api/v1/goods/class/list',
       method: 'get',
       params: {
-        page: listQuery.page,
-        limit: listQuery.limit
+        page: listQuery == null ? null : listQuery.page,
+        limit: listQuery == null ? null : listQuery.limit
       }
     })
   },
@@ -19,6 +19,13 @@ export default {
       url: '/api/v1/goods/class',
       method: 'post',
       data: foodGoodsClass
+    })
+  },
+  updateData(formData){
+    return request({
+      url: '/api/v1/goods/class',
+      method: 'put',
+      data: formData
     })
   }
 }

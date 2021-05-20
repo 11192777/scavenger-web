@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 230px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
@@ -49,22 +49,28 @@
           <span>{{ scope.row.tenantName }}</span>
         </template>
       </el-table-column>
+      <el-table-column :label="'启用状态'" class-name="status-col" width="100">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.isEnabled">启用</el-tag>
+          <el-tag v-if="!scope.row.isEnabled" type="danger">禁用</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">启用
+          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row, true)">启用
           </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
+          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row, false)">禁用
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :model="this.marketEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="'超市名称'" prop="timestamp">
           <el-input v-model="marketEntity.name"/>
         </el-form-item>
@@ -189,13 +195,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      MarketApi.getMarketList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
+      setTimeout(() => {
+        MarketApi.getMarketList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -204,11 +212,13 @@ export default {
       this.getList()
     },
     handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作成功',
-        type: 'success'
+      MarketApi.updateMarket(row.id, status).then( res => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getList()
       })
-      row.status = status
     },
     sortChange(data) {
       const { prop, order } = data
@@ -225,14 +235,11 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.marketEntity = {
+        id: null,
+        name: null,
+        remark: null,
+        address: null
       }
     },
     handleCreate() {
@@ -260,8 +267,7 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.createData = new Date(this.temp.timestamp)
+      this.marketEntity = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -270,18 +276,8 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          MarketApi.updateData(this.marketEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -289,6 +285,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })

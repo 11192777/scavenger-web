@@ -1,6 +1,5 @@
 <template>
-  <div v-if="!item.hidden&&item.children" class="menu-wrapper">
-
+  <div v-if="hasShowMainMenu(item)" class="menu-wrapper">
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
       <app-link :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
@@ -14,7 +13,7 @@
         <item v-if="item.meta" :icon="item.meta.icon" :title="item.meta.title" />
       </template>
 
-      <template v-for="child in item.children" v-if="!child.hidden">
+      <template v-for="child in item.children" v-if="hasShowSubMenu(child)">
         <sidebar-item
           v-if="child.children&&child.children.length>0"
           :is-nest="true"
@@ -34,6 +33,7 @@
 </template>
 
 <script>
+import SecurityApi from '@/api/security'
 import path from 'path'
 import { isExternal } from '@/utils'
 import Item from './Item'
@@ -59,10 +59,21 @@ export default {
   },
   data() {
     return {
-      onlyOneChild: null
+      onlyOneChild: null,
+      hideMenuList: null,
+      secondHideMenuList: null
     }
   },
+  created() {
+    this.getSecurity()
+  },
   methods: {
+    hasShowMainMenu(item) {
+      if((item.hidden && item.children) || this.hideMenuList.includes(item.name)) {
+        return false;
+      }
+      return true;
+    },
     hasOneShowingChild(children, parent) {
       const showingChildren = children.filter(item => {
         if (item.hidden) {
@@ -87,6 +98,12 @@ export default {
 
       return false
     },
+    hasShowSubMenu(item) {
+      if(item.hidden || this.secondHideMenuList.includes(item.name)) {
+        return false;
+      }
+      return true;
+    },
     resolvePath(routePath) {
       if (this.isExternalLink(routePath)) {
         return routePath
@@ -95,6 +112,12 @@ export default {
     },
     isExternalLink(routePath) {
       return isExternal(routePath)
+    },
+    getSecurity() {
+      SecurityApi.getSecurity().then( res => {
+        this.hideMenuList = res.data.hideMenuList
+        this.secondHideMenuList = res.data.secondHideMenuList;
+      })
     }
   }
 }

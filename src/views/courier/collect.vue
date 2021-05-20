@@ -3,7 +3,6 @@
     <div class="filter-container">
       <el-input :placeholder="'名称'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">添加</el-button>
     </div>
     <br>
     <br>
@@ -11,7 +10,7 @@
       v-loading="listLoading"
       :key="tableKey"
       :data="list"
-      border
+      bcollect
       fit
       highlight-current-row
       style="width: 100%;"
@@ -21,89 +20,50 @@
           {{ (listQuery.page - 1) * listQuery.limit + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column :label="'编码'" prop="id" sortable="custom" align="center">
+      <el-table-column :label="'商品名称'" prop="id" sortable="custom" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.code }}</span>
+          <span>{{ scope.row.goodsName }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'名称'" align="center">
+      <el-table-column :label="'商品数量'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
+          <span>{{ scope.row.amount }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'所属人账户'" align="center">
+      <el-table-column :label="'商品价格'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.userAccount }}</span>
+          <span>{{ scope.row.price }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'创建人名称'" align="center">
+      <el-table-column :label="'总价'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.createdByName }}</span>
+          <span>{{ scope.row.priceAmount }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="'创建时间'" align="center">
+      <el-table-column :label="'备注'" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.createdDate }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'逾期时间'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.expireTime }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'启用状态'" class-name="status-col" width="100">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.isEnabled">启用</el-tag>
-          <el-tag v-if="!scope.row.isEnabled" type="danger">禁用</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,true)">启用
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,false)">禁用
-          </el-button>
+          <span>{{ scope.row.remark }}</span>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
-<!--  新增编辑界面  -->
+    <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="this.tenantEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="'租户名称'" prop="type">
-          <el-input v-model="tenantEntity.name"/>
+      <el-form ref="dataForm" :model="this.collectEntity" label-city="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item :label="'所属省份'">
+          <el-select v-model="collectEntity.provinceId" style="width: 280px" class="filter-item" @change="provinceListChange()">
+            <el-option v-for="item in provinceList" :key="item.id" :label="item.name" :value="item.id"/>
+          </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus=='create'" :label="'所属人账号'" prop="timestamp">
-          <el-input v-model="tenantEntity.account"/>
+        <el-form-item :label="'所在城市'">
+          <el-select id="citySelect" v-model="collectEntity.cityId" :default-first-option="true" style="width: 280px" class="filter-item">
+            <el-option v-for="item in cityList" :key="item.id" :label="item.name" :value="item.id"/>
+          </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus=='update'" :label="'所属人账号'" prop="timestamp">
-          <el-input disabled="disabled" v-model="tenantEntity.account"/>
-        </el-form-item>
-        <el-form-item :label="'租户期限'" prop="title">
-          <el-date-picker v-model="tenantEntity.expireTime" type="datetime" placeholder="Please pick a date"/>
-        </el-form-item>
-        <el-form-item :label="'组织架构'">
-          <el-radio v-model="tenantEntity.orgServer" label="1">启用</el-radio>
-          <el-radio v-model="tenantEntity.orgServer" label="0">禁用</el-radio>
-        </el-form-item>
-        <el-form-item :label="'购物服务'">
-          <el-radio v-model="tenantEntity.shoppingServer" label="1">启用</el-radio>
-          <el-radio v-model="tenantEntity.shoppingServer" label="0">禁用</el-radio>
-        </el-form-item>
-        <el-form-item :label="'配送服务'">
-          <el-radio v-model="tenantEntity.courierServer" label="1">启用</el-radio>
-          <el-radio v-model="tenantEntity.courierServer" label="0">禁用</el-radio>
-        </el-form-item>
-        <el-form-item :label="'推荐服务'">
-          <el-radio v-model="tenantEntity.recommendServer" label="1">启用</el-radio>
-          <el-radio v-model="tenantEntity.recommendServer" label="0">禁用</el-radio>
-        </el-form-item>
-        <el-form-item :label="'审计服务'">
-          <el-radio v-model="tenantEntity.auditServer" label="1">启用</el-radio>
-          <el-radio v-model="tenantEntity.auditServer" label="0">禁用</el-radio>
+        <el-form-item :label="'员工账号'" prop="timestamp">
+          <el-input v-model="collectEntity.account"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -113,7 +73,7 @@
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
+      <el-table :data="pvData" bcollect fit highlight-current-row style="width: 100%">
         <el-table-column prop="key" label="Channel"/>
         <el-table-column prop="pv" label="Pv"/>
       </el-table>
@@ -126,16 +86,12 @@
 </template>
 
 <script>
-import TenantApi from '@/api/tenant'
+import CollectApi from '@/api/collect'
 import waves from '@/directive/waves' // Waves directive
-import { parseTime } from '@/utils/temp'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' }
-  // { key: 'US', display_name: 'USA' },
-  // { key: 'JP', display_name: 'Japan' },
-  // { key: 'EU', display_name: 'Eurozone' }
 ]
 
 // arr to obj ,such as { CN : "China", US : "USA" }
@@ -165,17 +121,16 @@ export default {
     return {
       tableKey: 0,
       list: null,
+      departmentList: null,
+      provinceList: null,
+      cityList: null,
       total: 0,
       listLoading: true,
-      tenantEntity:{
-        name: null,
+      collectEntity: {
+        id: null,
         account: null,
-        expireTime: new Date(),
-        orgServer: '1',
-        shoppingServer: '1',
-        courierServer: '1',
-        recommendServer: '1',
-        auditServer: '1'
+        provinceId: null,
+        cityId: null
       },
       listQuery: {
         page: 1,
@@ -213,7 +168,8 @@ export default {
     getList() {
       this.listLoading = true
       setTimeout(() => {
-        TenantApi.getTenantList(this.listQuery).then(response => {
+        CollectApi.getCollectList(this.listQuery).then(response => {
+          console.log('999999999999999999' + JSON.stringify(this.listQuery))
           this.list = response.data
           this.total = response.total
 
@@ -229,22 +185,24 @@ export default {
       this.getList()
     },
     handleModifyStatus(row, status) {
-      TenantApi.updateTenant(row.id, status).then( res => {
-        this.$message({
-          message: '操作成功',
-          type: 'success'
-        })
-        this.getList()
+      this.$message({
+        message: '操作成功',
+        type: 'success'
       })
+      row.status = status
     },
     sortChange(data) {
-      const { prop, order } = data
+      const { prop, collect } = data
       if (prop === 'id') {
-        this.sortByID(order)
+        this.sortByID(collect)
       }
     },
-    sortByID(order) {
-      if (order === 'ascending') {
+    provinceListChange() {
+      this.collectEntity.cityId = null
+      this.getCityList()
+    },
+    sortByID(collect) {
+      if (collect === 'ascending') {
         this.listQuery.sort = '+id'
       } else {
         this.listQuery.sort = '-id'
@@ -252,15 +210,14 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.tenantEntity = {
-        name: null,
-        account: null,
-        expireTime: new Date(),
-        orgServer: '1',
-        shoppingServer: '1',
-        courierServer: '1',
-        recommendServer: '1',
-        auditServer: '1'
+      this.temp = {
+        id: undefined,
+        importance: 1,
+        remark: '',
+        timestamp: new Date(),
+        title: '',
+        status: 'published',
+        type: ''
       }
     },
     handleCreate() {
@@ -274,8 +231,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          TenantApi.createTenant(this.tenantEntity).then(() => {
-            this.getList(this.listQuery)
+          CourierApi.createCourier(this.collectEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -283,13 +239,14 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
     },
     handleUpdate(row) {
-      this.tenantEntity = Object.assign({}, row)
-      this.tenantEntity.account = row.userAccount
+      this.temp = Object.assign({}, row) // copy obj
+      this.temp.createData = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -298,8 +255,18 @@ export default {
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
+        alert(this.temp.timestamp)
         if (valid) {
-          TenantApi.updateData(this.tenantEntity).then(() => {
+          const tempData = Object.assign({}, this.temp)
+          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+          updateArticle(tempData).then(() => {
+            for (const v of this.list) {
+              if (v.id === this.temp.id) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1, this.temp)
+                break
+              }
+            }
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -307,7 +274,6 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.getList()
           })
         }
       })
@@ -328,20 +294,6 @@ export default {
         this.dialogPvVisible = true
       })
     },
-    // handleDownload() {
-    //   this.downloadLoading = true
-    //   import('@/vendor/Export2Excel').then(excel => {
-    //     const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const data = this.formatJson(filterVal, this.list)
-    //     excel.export_json_to_excel({
-    //       header: tHeader,
-    //       data,
-    //       filename: 'table-list'
-    //     })
-    //     this.downloadLoading = false
-    //   })
-    // },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
         if (j === 'timestamp') {

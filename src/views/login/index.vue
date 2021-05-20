@@ -34,7 +34,6 @@
 
 <script>
 import Util from '@/utils/validate'
-
 export default {
   name: 'Login',
   data() {

@@ -2,9 +2,8 @@
   <div class="app-container">
 
     <div class="filter-container">
-
       <el-input :placeholder="'标题'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.type" :placeholder="'类型'" clearable class="filter-item" style="width: 230px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
@@ -37,19 +36,17 @@
         </template>
       </el-table-column>
 
-      <el-table-column :label="'操作'" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="'操作'" align="center" width="120" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
-          </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="getList"/>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
 
 <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :model="this.goodsClassEntity" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item :label="'分类名称'">
           <el-input v-model="goodsClassEntity.name"/>
         </el-form-item>
@@ -113,9 +110,6 @@ export default {
   },
   data() {
     return {
-      imagecropperShow: false,
-      imagecropperKey: 0,
-      image: 'https://wpimg.wallstcn.com/577965b9-bb9e-4e02-9f0c-095b41417191',
       tableKey: 0,
       list: null,
       marketList: null,
@@ -183,13 +177,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      GoodsClassApi.getGoodsClassList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.total
+      setTimeout(() => {
+        GoodsClassApi.getGoodsClassList(this.listQuery).then(response => {
+          this.list = response.data
+          this.total = response.total
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          })
         })
       })
     },
@@ -222,14 +218,10 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      this.goodsClassEntity = {
+        id: null,
+        name: null,
+        code: null
       }
     },
     handleCreate() {
@@ -241,7 +233,6 @@ export default {
       })
     },
     createData() {
-
       GoodsClassApi.createGoodsClass(this.goodsClassEntity).then(() =>{
         this.dialogFormVisible = false
         this.$notify({
@@ -277,22 +268,19 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.$router.push({ path: "/shopping/attachment/" + row.id });
+      this.goodsClassEntity.id = row.id
+      this.goodsClassEntity.code = row.key
+      this.goodsClassEntity.name = row.value
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
-        alert(this.temp.timestamp)
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
+          GoodsClassApi.updateData(this.goodsClassEntity).then(() => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -300,6 +288,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
