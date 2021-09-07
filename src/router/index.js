@@ -56,7 +56,7 @@ export const constantRouterMap = [
         path: 'company',
         name: 'company',
         component: () => import('@/views/orgs/company'),
-        meta: { title: '公司管理', icon: 'table' }
+        meta: { title: '公司管理', icon: 'table' },
       },
       {
         path: 'department',

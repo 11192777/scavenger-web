@@ -4,23 +4,16 @@ export default {
 
   getTenantList(listQuery) {
     return request({
-      url: '/api/v1/tenants',
-      method: 'get',
-      params: {
-        page: listQuery == null ? null : listQuery.page,
-        limit: listQuery == null ? null : listQuery.limit
-      }
+      url: '/api/tenant',
+      method: 'get'
     })
   },
 
-  updateTenant(id, status) {
+  updateTenant(tenantEntity) {
     return request({
-      url: '/api/v1/tenant/status',
-      method: 'put',
-      params: {
-        id: id,
-        status: status
-      }
+      url: '/api/tenant',
+      method: 'post',
+      data: tenantEntity
     })
   }
 }
