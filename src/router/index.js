@@ -172,13 +172,13 @@ export const constantRouterMap = [
     component: Layout,
     redirect: '/audit/log',
     name: 'audit',
-    meta: { title: '操作审计', icon: 'example' },
+    meta: { title: '系统日志', icon: 'example' },
     children: [
       {
         path: 'courier',
         name: 'courier',
         component: () => import('@/views/audit/log'),
-        meta: { title: '操作审计', icon: 'table' }
+        meta: { title: '系统日志', icon: 'table' }
       }
     ]
   }
