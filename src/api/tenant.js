@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 
-
 export default {
 
   getTenantList(listQuery) {
@@ -14,28 +13,14 @@ export default {
     })
   },
 
-  createTenant(tenant){
-    return request({
-      url: '/api/v1/tenant',
-      method: 'post',
-      data: tenant
-    })
-  },
-  updateTenant(id, status){
+  updateTenant(id, status) {
     return request({
       url: '/api/v1/tenant/status',
       method: 'put',
       params: {
-        id:id,
+        id: id,
         status: status
       }
-    })
-  },
-  updateData(formData){
-    return request({
-      url: '/api/v1/tenant',
-      method: 'put',
-      data: formData
     })
   }
 }
