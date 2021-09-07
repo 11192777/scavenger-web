@@ -9,7 +9,6 @@ Vue.use(Router)
 /* Layout */
 
 import Layout from '../views/layout/Layout'
-import fa from 'element-ui/src/locale/lang/fa'
 
 /**
 * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
@@ -33,6 +32,7 @@ export const constantRouterMap = [
     component: Layout,
     redirect: '/dashboard',
     name: 'Dashboard',
+    meta: { title: 'sss', icon: 'example' },
     hidden: true,
     children: [{
       path: 'dashboard',
@@ -50,7 +50,7 @@ export const constantRouterMap = [
         path: 'tenant',
         name: 'tenant',
         component: () => import('@/views/orgs/tenant'),
-        meta: { title: '租户管理', icon: 'table'}
+        meta: { title: '租户管理', icon: 'table' }
       },
       {
         path: 'company',
@@ -113,9 +113,9 @@ export const constantRouterMap = [
         path: 'attachment/:id',
         name: 'attachment',
         component: () => import('@/views/shopping/attachment'),
-        meta: { title: '图片上传', icon: 'table' ,noCache: true},
+        meta: { title: '图片上传', icon: 'table', noCache: true },
         hidden: true
-      },
+      }
     ]
   },
   {
