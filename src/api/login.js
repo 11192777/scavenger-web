@@ -2,21 +2,19 @@ import request from '@/utils/request'
 
 export function login(username, password) {
   return request({
-    url: '/api/v1/user/login/account',
-    method: 'get',
-    params:{
-      account: username,
-      password: password,
-      manager: true
+    url: '/api/wechat/user/login',
+    method: 'post',
+    data:{
+      username: username,
+      password: password
     }
   })
 }
 
-export function getInfo(token) {
+export function getInfo() {
   return request({
     url: '/api/v1/token',
     method: 'get',
-    params: { token }
   })
 }
 

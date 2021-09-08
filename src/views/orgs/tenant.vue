@@ -52,14 +52,14 @@
 
     <!--  新增编辑界面  -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="tenantEntity" label-position="left" label-width="300px" style="width: 900px; margin-left:100px;">
+      <el-form ref="dataForm" :rules="rules" :model="tenantEntity" label-position="left" label-width="300px" style="width: 900px; margin-left:100px;">
         <el-form-item v-if="dialogStatus=='create'" :label="'租户id'" prop="123">
           <el-input v-model="tenantEntity.tenantId"/>
         </el-form-item>
         <el-form-item v-if="dialogStatus=='update'" :label="'租户id'" prop="123">
           <el-input v-model="tenantEntity.tenantId" readonly="readonly"/>
         </el-form-item>
-        <el-form-item :label="'租户名称'" prop="租户名称">
+        <el-form-item :label="'租户名称'"  prop="租户名称">
           <el-input v-model="tenantEntity.tenantName"/>
         </el-form-item>
         <el-form-item :label="'请求私有化服务地址'" prop="请求私有化服务地址">
@@ -128,11 +128,11 @@ export default {
       total: 0,
       listLoading: true,
       tenantEntity: {
-        tenantName: null,
-        appId: null,
-        tenantId: null,
-        appSecret: null,
-        requestDomainName: null
+        tenantName: '',
+        appId: '',
+        tenantId: '',
+        appSecret: '',
+        requestDomainName: ''
       },
       listQuery: {
         page: 1,
@@ -156,9 +156,10 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        tenantId: [{ required: true, message: '租户id必填', trigger: 'blur' }],
+        tenantName: [{required: true, message: '租户名称必填', trigger: 'blur' }],
+        requestDomainName: [{ required: true, message: '私有化地址必填', trigger: 'blur' }],
+        appId: [{ required: true, message: 'appid必填', trigger: 'blur' }]
       },
       downloadLoading: false
     }

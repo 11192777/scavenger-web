@@ -1,6 +1,7 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout , getInfo} from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import ConstStore from '../../../config/ConstStore'
+import da from "element-ui/src/locale/lang/da";
 
 const user = {
   state: {
@@ -33,8 +34,9 @@ const user = {
         login(username, userInfo.password).then(response => {
           const data = response.result
           ConstStore.userLevel = data.userLevel
-          setToken(data.token)
-          commit('SET_TOKEN', data.token)
+          console.log(data.accessToken)
+          setToken(data.accessToken)
+          commit('SET_TOKEN', data.accessToken)
           resolve()
         }).catch(error => {
           reject(error)
@@ -43,21 +45,10 @@ const user = {
     },
 
     // 获取用户信息
-    GetInfo({ commit, state }) {
-      return new Promise((resolve, reject) => {
-        getInfo(state.token).then(response => {
-          const data = response.result
-          if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
-            commit('SET_ROLES', data.roles)
-          } else {
-            reject('getInfo: roles must be a non-null array !')
-          }
-          commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
-          resolve(response)
-        }).catch(error => {
-          reject(error)
-        })
+    GetInfo({ commit }) {
+      return new Promise(resolve => {
+          commit('SET_ROLES', '用户角色')
+          resolve(reponse)
       })
     },
 
