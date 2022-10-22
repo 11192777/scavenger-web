@@ -11,28 +11,28 @@ Vue.use(Router)
 import Layout from '../views/layout/Layout'
 
 /**
-* hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
-* alwaysShow: true               if set true, will always show the root menu, whatever its child routes length
-*                                if not set alwaysShow, only more than one route under the children
-*                                it will becomes nested mode, otherwise not show the root menu
-* redirect: noredirect           if `redirect:noredirect` will no redirect in the breadcrumb
-* name:'router-name'             the name is used by <keep-alive> (must set!!!)
-* meta : {
+ * hidden: true                   if `hidden:true` will not show in the sidebar(default is false)
+ * alwaysShow: true               if set true, will always show the root menu, whatever its child routes length
+ *                                if not set alwaysShow, only more than one route under the children
+ *                                it will becomes nested mode, otherwise not show the root menu
+ * redirect: noredirect           if `redirect:noredirect` will no redirect in the breadcrumb
+ * name:'router-name'             the name is used by <keep-alive> (must set!!!)
+ * meta : {
     title: 'title'               the name show in submenu and breadcrumb (recommend set)
     icon: 'svg-name'             the icon show in the sidebar,
   }
-**/
+ **/
 
 export const constantRouterMap = [
-  { path: '/login', component: () => import('@/views/login/index'), hidden: true },
-  { path: '/404', component: () => import('@/views/404'), hidden: true },
+  {path: '/login', component: () => import('@/views/login/index'), hidden: true},
+  {path: '/404', component: () => import('@/views/404'), hidden: true},
 
   {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
     name: 'Dashboard',
-    meta: { title: 'sss', icon: 'example' },
+    meta: {title: 'sss', icon: 'example'},
     hidden: true,
     children: [{
       path: 'dashboard',
@@ -44,20 +44,20 @@ export const constantRouterMap = [
     component: Layout,
     redirect: '/orgs/tenant',
     name: 'orgs',
-    meta: { title: '组织架构', icon: 'example'},
+    meta: {title: 'SQL适配', icon: 'example'},
     children: [
       {
         path: 'tenant',
         name: 'tenant',
         component: () => import('@/views/orgs/tenant'),
-        meta: { title: '租户管理', icon: 'table' }
+        meta: {title: '租户管理', icon: 'table'}
       },
-      // {
-      //   path: 'company',
-      //   name: 'company',
-      //   component: () => import('@/views/orgs/company'),
-      //   meta: { title: '公司管理', icon: 'table' },
-      // },
+      {
+        path: 'company',
+        name: 'company',
+        component: () => import('@/views/orgs/company'),
+        meta: { title: '公司管理', icon: 'table' },
+      },
       // {
       //   path: 'department',
       //   name: 'department',
@@ -186,6 +186,6 @@ export const constantRouterMap = [
 
 export default new Router({
   // mode: 'history', //后端支持可开
-  scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: () => ({y: 0}),
   routes: constantRouterMap
 })

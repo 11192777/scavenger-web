@@ -1,101 +1,47 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input :placeholder="'名称'" v-model="listQuery.title" style="width: 200px;" class="filter-item"/>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">添加</el-button>
+      <el-select placeholder="类型" clearable class="filter-item" style="width: 230px; margin-left: 1%;">
+        <!--        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key"/>-->
+        <el-option label="u897987987" value="sss"/>
+        <el-option label="sss" value="sss"/>
+        <el-option label="sss" value="sss"/>
+      </el-select>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" style="margin-left: 1%;">搜索</el-button>
     </div>
+    <el-row class="demo-autocomplete" style="margin-top: 10px;">
+      <el-col :span="12" style="width: 47%; margin-left: 1%;">
+        <div class="sub-title">inpuA</div>
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 15}"
+          placeholder="请输入内容"
+          v-model="textarea">
+        </el-input>
+      </el-col>
+      <el-col :span="12" style="width: 47%; margin-left: 2%;">
+        <div class="sub-title">inpuB</div>
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 15}"
+          placeholder="请输入内容"
+          v-model="textarea">
+        </el-input>
+      </el-col>
+    </el-row>
     <br>
     <br>
-    <el-table
-      v-loading="listLoading"
-      :key="tableKey"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange">
-      <el-table-column :label="'序号'" width="70" align="center">
-        <template slot-scope="scope">
-          {{ (listQuery.page - 1) * listQuery.limit + scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      <el-table-column :label="'租户id'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.tenantId }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'分配给e档案的appid'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.appId }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'租户名称'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.tenantName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'请求私有化服务地址'" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.requestDomainName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="'操作'" align="center" width="100" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
-
-    <!--  新增编辑界面  -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="tenantEntity" label-position="left" label-width="300px" style="width: 900px; margin-left:100px;">
-        <el-form-item v-if="dialogStatus=='create'" :label="'租户id'" prop="123">
-          <el-input v-model="tenantEntity.tenantId"/>
-        </el-form-item>
-        <el-form-item v-if="dialogStatus=='update'" :label="'租户id'" prop="123">
-          <el-input v-model="tenantEntity.tenantId" readonly="readonly"/>
-        </el-form-item>
-        <el-form-item :label="'租户名称'"  prop="租户名称">
-          <el-input v-model="tenantEntity.tenantName"/>
-        </el-form-item>
-        <el-form-item :label="'请求私有化服务地址'" prop="请求私有化服务地址">
-          <el-input v-model="tenantEntity.requestDomainName"/>
-        </el-form-item>
-        <el-form-item :label="'分配给e档案的appid'" prop="分配给e档案的appid">
-          <el-input v-model="tenantEntity.appId"/>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">确定</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">确定</el-button>
-      </span>
-    </el-dialog>
-
   </div>
 </template>
 
 <script>
 import TenantApi from '@/api/tenant'
 import waves from '@/directive/waves'
-import { parseTime } from '@/utils/temp'
+import {parseTime} from '@/utils/temp'
 import Pagination from '@/components/Pagination'
 
 const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' }
+  {key: 'CN', display_name: 'China'}
 ]
 
 // arr to obj ,such as { CN : "China", US : "USA" }
@@ -106,8 +52,8 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
-  directives: { waves },
+  components: {Pagination},
+  directives: {waves},
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -144,7 +90,7 @@ export default {
       radio: true,
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      sortOptions: [{label: 'ID Ascending', key: '+id'}, {label: 'ID Descending', key: '-id'}],
       statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
       dialogFormVisible: false,
@@ -156,10 +102,10 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        tenantId: [{ required: true, message: '租户id必填', trigger: 'blur' }],
-        tenantName: [{required: true, message: '租户名称必填', trigger: 'blur' }],
-        requestDomainName: [{ required: true, message: '私有化地址必填', trigger: 'blur' }],
-        appId: [{ required: true, message: 'appid必填', trigger: 'blur' }]
+        tenantId: [{required: true, message: '租户id必填', trigger: 'blur'}],
+        tenantName: [{required: true, message: '租户名称必填', trigger: 'blur'}],
+        requestDomainName: [{required: true, message: '私有化地址必填', trigger: 'blur'}],
+        appId: [{required: true, message: 'appid必填', trigger: 'blur'}]
       },
       downloadLoading: false
     }
@@ -186,7 +132,7 @@ export default {
       this.getList()
     },
     sortChange(data) {
-      const { prop, order } = data
+      const {prop, order} = data
       if (prop === 'id') {
         this.sortByID(order)
       }
