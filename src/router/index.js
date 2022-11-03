@@ -32,48 +32,49 @@ export const constantRouterMap = [
     component: Layout,
     redirect: '/dashboard',
     name: 'Dashboard',
-    meta: {title: 'sss', icon: 'example'},
+    meta: {title: 'SCRIPTS', icon: 'example'},
     hidden: true,
     children: [{
       path: 'dashboard',
-      component: () => import('@/views/dashboard/index')
+      component: () => import('@/views/scripts/fieldTemplate')
     }]
   },
   {
-    path: '/orgs',
+    path: '/',
     component: Layout,
-    redirect: '/orgs/tenant',
+    redirect: '/scripts',
     name: 'orgs',
-    meta: {title: 'SQL适配', icon: 'example'},
+    meta: {title: 'SCRIPTS', icon: 'example'},
     children: [
       {
-        path: 'tenant',
-        name: 'tenant',
-        component: () => import('@/views/orgs/tenant'),
-        meta: {title: '租户管理', icon: 'table'}
+        path: 'fieldTemplate',
+        name: 'fieldTemplate',
+        component: () => import('@/views/scripts/fieldTemplate'),
+        meta: {title: '字段模板', icon: 'table'}
       },
       {
-        path: 'company',
-        name: 'company',
-        component: () => import('@/views/orgs/company'),
-        meta: { title: '公司管理', icon: 'table' },
+        path: 'sqlAdapter',
+        name: 'sqlAdapter',
+        component: () => import('@/views/scripts/sqlAdapter'),
+        meta: { title: 'SQL转换', icon: 'table' }
       },
-      // {
-      //   path: 'department',
-      //   name: 'department',
-      //   component: () => import('@/views/orgs/department'),
-      //   meta: { title: '部门管理', icon: 'table' }
-      // },
+      {
+        path: 'attachment/:id',
+        name: 'attachment',
+        component: () => import('@/views/scripts/attachment'),
+        meta: { title: '附件上传', icon: 'table', noCache: true },
+        hidden: true
+      }
       // {
       //   path: 'position',
       //   name: 'position',
-      //   component: () => import('@/views/orgs/position'),
+      //   component: () => import('@/views/scripts/position'),
       //   meta: { title: '岗位管理', icon: 'table' }
       // },
       // {
       //   path: 'staff',
       //   name: 'staff',
-      //   component: () => import('@/views/orgs/staff'),
+      //   component: () => import('@/views/scripts/staff'),
       //   meta: { title: '员工管理', icon: 'table' }
       // }
     ]
@@ -109,13 +110,6 @@ export const constantRouterMap = [
   //       component: () => import('@/views/shopping/show'),
   //       meta: { title: '货架管理', icon: 'table' }
   //     },
-  //     {
-  //       path: 'attachment/:id',
-  //       name: 'attachment',
-  //       component: () => import('@/views/shopping/attachment'),
-  //       meta: { title: '图片上传', icon: 'table', noCache: true },
-  //       hidden: true
-  //     }
   //   ]
   // },
   // {

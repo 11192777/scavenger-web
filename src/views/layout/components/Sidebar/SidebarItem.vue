@@ -52,7 +52,7 @@ export default {
     return {}
   },
   created() {
-    this.getSecurity()
+    // this.getSecurity()
   },
   methods: {
     hasOneShowingChild(children = [], parent) {
